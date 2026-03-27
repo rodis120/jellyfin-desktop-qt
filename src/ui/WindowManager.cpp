@@ -19,6 +19,9 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 
+#ifdef Q_OS_WIN32
+#include <windows.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 WindowManager& WindowManager::Get()
@@ -913,6 +916,19 @@ void WindowManager::updateDebugInfo()
   {
     info << "  Screen" << scr->name() << scr->geometry() << "\n";
   }
+
+#ifdef Q_OS_WIN32
+  HMONITOR mon = MonitorFromWindow((HWND)m_window->winId(), MONITOR_DEFAULTTONEAREST);
+  MONITORINFO moninfo = {};
+  moninfo.cbSize = sizeof(moninfo);
+  RECT winrc;
+  if (GetMonitorInfo(mon, &moninfo) &&GetWindowRect((HWND)m_window->winId(), &winrc))
+  {
+    RECT rc = moninfo.rcMonitor;
+    info << "  Win32 window" << QString("%1/%2 %3x%4").arg(rc.left).arg(rc.top).arg(rc.right).arg(rc.bottom) << QString("%1/%2 %3x%4").arg(winrc.left).arg(winrc.top).arg(winrc.right).arg(winrc.bottom) << "\n";
+  }
+#endif
+
   info << "\n";
   debugInfo += infoString;
 
